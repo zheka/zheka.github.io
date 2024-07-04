@@ -1,0 +1,104 @@
+<html>
+<head>
+<style>
+
+.word {
+  font-family: monospace, monospace;
+  font-size: min(10vw, 10mm);
+  letter-spacing: 1em;
+  text-transform: uppercase;
+}
+
+.word1 {
+  background-color: lightgrey;
+  color: darkgrey;
+}
+
+.word2 {
+  background-color: white;
+}
+
+.word3 {
+  background-color: yellow;
+}
+
+</style>
+</head>
+<body>
+
+<div id="board" class="word"></div>
+
+<div>
+  <input id="word_input" type="text" minlength=5 maxlength=5 class="word"/>
+  <input id="word_button" type="button" class="word" value="?"/>
+</div>
+
+<script>
+
+const secret_word = "ОМУЛЬ";
+
+function letter_class(i, c) {
+  if (secret_word[i] == c) {
+    return "word3";
+  }
+  if (secret_word.indexOf(c) != -1) {
+    return "word2";
+  }
+  return "word1";
+}
+
+let words = [];
+
+const board = document.getElementById("board");
+
+function update_board() {
+  let s = "";
+  for (let w of words) {
+    s += "<div>";
+    for (let i = 0; i < w.length; ++i) {
+      let c = w[i];
+      let r = letter_class(i, c);
+      console.log(i, c, r);
+      s += "<span class='" + r + "'>";
+      s += c;
+      s += "</span>";
+    }
+    s += "</div>"
+  }
+  board.innerHTML = s;
+}
+
+const word_input = document.getElementById("word_input");
+const word_button = document.getElementById("word_button");
+
+function check_word(w) {
+  let r = "https://ru.wiktionary.org/w/api.php?origin=*&action=query&format=json&titles=" + encodeURIComponent(w.toLowerCase());
+  fetch(r, {mode:  'cors', method: 'GET'})
+  .then((response) => response.json())
+  .then((data) => {
+    if (data.query && data.query.pages) {
+      let k = Object.keys(data.query.pages)[0]
+      if (k != -1) {
+        words.push(w.toUpperCase());
+        update_board();
+        return;
+        }
+    }
+    console.log("failed to find word", w);
+  })
+  .catch(console.error);
+}
+
+word_button.onclick = function () {
+  let s = word_input.value;
+  if (s.length != secret_word.length) {
+    return;
+  }
+  check_word(s);
+}
+
+word_input.placeholder = ".".repeat(secret_word.length);
+
+</script>
+</body>
+</html>
