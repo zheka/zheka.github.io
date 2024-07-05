@@ -1,10 +1,11 @@
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <style>
 
 .word {
   font-family: monospace, monospace;
-  font-size: min(10vw, 10mm);
+  font-size: min(10vw, 20mm);
   letter-spacing: 1em;
   text-transform: uppercase;
 }
@@ -22,6 +23,11 @@
   background-color: yellow;
 }
 
+.game {
+  display: block;
+  width: min(8.2em, 200mm);
+}
+
 </style>
 </head>
 <body>
@@ -29,8 +35,11 @@
 <div id="board" class="word"></div>
 
 <div>
-  <input id="word_input" type="text" minlength=5 maxlength=5 class="word"/>
-  <input id="word_button" type="button" class="word" value="?"/>
+  <input id="word_input" type="text" minlength=5 maxlength=5 size=5 class="game word"/>
+</div>
+<div>
+
+  <input id="word_button" type="button" class="word" value=">"/>
 </div>
 
 <script>
@@ -50,6 +59,8 @@ function letter_class(i, c) {
 let words = [];
 
 const board = document.getElementById("board");
+const word_input = document.getElementById("word_input");
+const word_button = document.getElementById("word_button");
 
 function update_board() {
   let s = "";
@@ -66,10 +77,8 @@ function update_board() {
     s += "</div>"
   }
   board.innerHTML = s;
+  word_input.value = "";
 }
-
-const word_input = document.getElementById("word_input");
-const word_button = document.getElementById("word_button");
 
 function check_word(w) {
   let r = "https://ru.wiktionary.org/w/api.php?origin=*&action=query&format=json&titles=" + encodeURIComponent(w.toLowerCase());
@@ -97,7 +106,8 @@ word_button.onclick = function () {
   check_word(s);
 }
 
-word_input.placeholder = ".".repeat(secret_word.length);
+// word_input.placeholder = ".".repeat(secret_word.length);
+word_input.placeholder = "СЛОВО";
 
 </script>
 </body>
