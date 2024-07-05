@@ -28,9 +28,58 @@
   width: min(8.2em, 200mm);
 }
 
+.my_output {
+  width: 10vw;
+  height: 10vw;
+  background-color: black;
+  border: 2px solid yellow;
+  border-radius: 2mm;
+  display: inline-block;
+}
+
+#my_input {
+  position: fixed;
+  height: 10px;
+  bottom: -10px;
+}
+
 </style>
 </head>
 <body>
+
+<div>
+<span id="menu_new_game">New</span>
+</div>
+<div  id="menu_new_game_content">
+<div>
+Word <input id="new_game_word" type="text"/>
+</div>
+<div>
+Attempts <input id="new_game_attempts" type="number" min=1 value="6"/>
+</div>
+<div>
+<span id="new_game_share"></span>
+</div>
+</div>
+
+
+
+
+
+<div>
+<div id="my_output" class="my_output"></div>
+<div class="my_output"></div>
+<div class="my_output"></div>
+</div>
+<div>
+<div class="my_output"></div>
+<div class="my_output"></div>
+<div class="my_output"></div>
+</div>
+
+<div id="my_input_container">
+<input id="my_input" type="text"/>
+</div>
 
 <div id="board" class="word"></div>
 
@@ -44,7 +93,19 @@
 
 <script>
 
-const secret_word = "ОМУЛЬ";
+function get_game() {
+  let u = new URL(location.href);
+  let v = u.searchParams.get("game")
+  if (v) {
+    let g = JSON.parse(atob(v));
+    if (g.w) {
+      return g.w;
+    }
+  }
+  return "ОМУЛЬ";
+}
+
+const secret_word = get_game();
 
 function letter_class(i, c) {
   if (secret_word[i] == c) {
@@ -108,6 +169,90 @@ word_button.onclick = function () {
 
 // word_input.placeholder = ".".repeat(secret_word.length);
 word_input.placeholder = "СЛОВО";
+
+const my_output = document.getElementById("my_output");
+const my_input = document.getElementById("my_input");
+
+my_output.addEventListener("click", function () {
+  my_input.focus();
+});
+
+my_input.addEventListener("input", function () {
+  my_output.innerText = my_input.value;
+});
+
+
+//
+// New game creator
+//
+
+const my_new_game_word = document.getElementById("new_game_word");
+const my_new_game_attempts = document.getElementById("new_game_attempts");
+const my_new_game_share = document.getElementById("new_game_share");
+
+function calc_new_game() {
+  let w = my_new_game_word.value;
+  if (!w) {
+    return null;
+  }
+  let n = my_new_game_attempts.value;
+  if (!n || n <= 0) {
+    return null;
+  }
+  return {w: w, n: n};
+}
+
+function update_new_game() {
+  let g = calc_new_game();
+  if (!g) {
+    my_new_game_share.innerText = "";
+    return
+  }
+  if (navigator.share) {
+    my_new_game_share.innerText = "[ Share link ]";
+  } else {
+    my_new_game_share.innerText = "[ Copy link ]";
+  }
+}
+
+function share_new_game() {
+  let g = calc_new_game();
+  if (!g) {
+    return
+  }
+  let u = new URL(location);
+  u.searchParams.set("game", btoa(JSON.stringify(g)));
+  if (navigator.share) {
+    navigator.share({
+      title: '5bukv',
+      url: u,
+    }).then(() => {
+      console.log("Shared", u.href);
+    }).catch((error) => {
+      console.log("Error sharing", u.href);
+    })
+  } else {
+    navigator.clipboard.writeText(u.href);
+    console.log("Copied", u.href);
+  }
+}
+
+my_new_game_word.addEventListener("input", update_new_game);
+my_new_game_attempts.addEventListener("input", update_new_game);
+my_new_game_share.addEventListener("click", share_new_game);
+
+const my_menu_new_game = document.getElementById("menu_new_game");
+const my_menu_new_game_content = document.getElementById("menu_new_game_content");
+
+my_menu_new_game_content.style.display = "none";
+
+my_menu_new_game.addEventListener("click", () => {
+  if (my_menu_new_game_content.style.display != "none") {
+    my_menu_new_game_content.style.display = "none";
+  } else {
+    my_menu_new_game_content.style.display = "block";
+  }
+});
 
 </script>
 </body>
