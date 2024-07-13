@@ -1,0 +1,158 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+
+.char_box {
+  width: min(10vw, 20mm);
+  height: min(10vw, 20mm);
+  margin: 1mm;
+  border: 1mm solid black;
+  border-radius: 3mm;
+  font-family: monospace, monospace;
+  font-size: min(9vw, 18mm);
+  text-align: center;
+  vertical-align: middle;
+  background-color: white;
+  color: grey;
+}
+
+.char_box.missing {
+  background-color: lightgrey;
+  color: white;
+}
+
+.char_box.present {
+  background-color: white;
+  color: black;
+}
+
+.char_box.found {
+  background-color: yellow;
+  color: black;
+}
+
+#word_button {
+  font-family: monospace, monospace;
+  font-size: min(9vw, 18mm);
+  border-radius: 3mm;
+}
+
+#word_input {
+  position: fixed;
+  height: 10px;
+  top: -20px;
+}
+
+</style>
+</head>
+<body>
+
+<div>
+<a href="new.html">New</a>
+</div>
+
+<table id="my_board"></table>
+
+<div>
+<button id="word_button" type="button"></button>
+</div>
+
+<input id="word_input" type="text"/>
+
+<script src="game.js"></script>
+<script>
+
+function load_game() {
+  let g = {w: "ОМУЛЬ", n: 6};
+  let u = new URL(location.href);
+  let v = u.searchParams.get("game")
+  if (v) {
+    g = unpack_game(v);
+  }
+  return g;
+}
+
+const my_game = load_game();
+let words = [];
+
+const my_board = document.getElementById("my_board");
+const my_button = document.getElementById("word_button");
+const my_input = document.getElementById("word_input");
+const my_boxes = document.getElementsByClassName("char_box");
+
+function add_scored_word(w) {
+  const cc = ["missing", "present", "found"];
+  const v = score_word(my_game.w, w);
+  let p = my_game.w.length * words.length;
+  let i = 0;
+  for (; i < w.length; i++) {
+    const e = my_boxes.item(p + i);
+    e.innerHTML = w[i];
+    e.classList.add(cc[v.s[i]]);
+  }
+  words.push(w);
+}
+
+function normalize_game_word(w) {
+  w = normalize_word(w, "ru");
+  if (w.length > my_game.w.length) {
+    w = w.substring(0, my_game.w.length);
+  }
+  return w;
+}
+
+my_board.addEventListener("click", () => {
+  my_input.focus({preventScroll: true});
+});
+
+my_input.addEventListener("input", () => {
+  let w = normalize_game_word(my_input.value);
+  my_input.value = w;
+  let p = my_game.w.length * words.length;
+  let i = 0;
+  for (; i < w.length; i++) {
+    my_boxes.item(p + i).innerHTML = w[i];
+  }
+  for (; i < my_game.w.length; i++) {
+    my_boxes.item(p + i).innerHTML = "";
+  }
+});
+
+my_button.addEventListener("click", () => {
+  let w = normalize_game_word(my_input.value);
+  if (w.length != my_game.w.length) {
+    return;
+  }
+  verify_word(w, "ru")
+  .then((r) => {
+    if (r.v) {
+      my_input.value = "";
+      add_scored_word(w);
+    }
+  })
+  .catch((e) => console.log(e));
+});
+
+(function () {
+  if (my_game.w.length == 0) {
+    return;
+  }
+
+  let s = "";
+  for (let j = 0; j < my_game.n; j++) {
+    s += "<tr>";
+    for (let i = 0; i < my_game.w.length; i++) {
+      s += "<td class=\"char_box\"></td>";
+    }
+    s += "</tr>";
+  }
+  my_board.innerHTML = s;
+
+  my_button.innerHTML = "&#x2705;";
+}());
+
+</script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+<body>
+
+<div>
+<span id="my_error" style="color: red"></span>
+</div>
+<div>
+<label>Word</label>
+<input id="my_word" type="text"/>
+</div>
+<div>
+<label>Attempts</label>
+<input id="my_attempts" type="number" min=1 value="6"/>
+</div>
+<div>
+<button id="my_share"></button>
+</div>
+
+<script src="game.js"></script>
+<script>
+const my_error = document.getElementById("my_error");
+const my_word = document.getElementById("my_word");
+const my_attempts = document.getElementById("my_attempts");
+const my_share = document.getElementById("my_share");
+
+my_word.addEventListener("input", () => {
+  my_word.value = normalize_word(my_word.value, "ru");
+});
+
+my_attempts.addEventListener("change", () => {
+  let n = parseInt(my_attempts.value);
+  if (!n || n < 1) {
+    my_attempts.value = "1";
+  }
+});
+
+my_share.addEventListener("click", () => {
+  let w = my_word.value;
+  let n = parseInt(my_attempts.value);
+  verify_word(w, "ru")
+  .then((r) => {
+    if (!r.v) {
+      my_error.innerText = "WTF is '" + w + "'?";
+      return;
+    }
+    my_error.innerText = "";
+    let u = new URL(location.href.replace("/new.html", "/play.html"));
+    u.searchParams.set("game", pack_game({w: w, n: n}));
+    if (navigator.share) {
+      navigator.share({title: '5bukv', url: u})
+      .catch((e) => console.log(e));
+    } else {
+      navigator.clipboard.writeText(u.href)
+      .catch((e) => console.log(e));
+    }
+  })
+  .catch((e) => console.log(e));
+});
+
+if (navigator.share) {
+  my_share.innerText = "Share link";
+} else {
+  my_share.innerText = "Copy link";
+}
+</script>
+
+</body>
+</html>
