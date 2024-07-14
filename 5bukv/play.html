@@ -83,6 +83,9 @@ const my_input = document.getElementById("word_input");
 const my_boxes = document.getElementsByClassName("char_box");
 
 function add_scored_word(w) {
+  if (words.length == my_game.n) {
+    return;
+  }
   const cc = ["missing", "present", "found"];
   const v = score_word(my_game.w, w);
   let p = my_game.w.length * words.length;
@@ -110,6 +113,9 @@ my_board.addEventListener("click", () => {
 my_input.addEventListener("input", () => {
   let w = normalize_game_word(my_input.value);
   my_input.value = w;
+  if (words.length == my_game.n) {
+    return;
+  }
   let p = my_game.w.length * words.length;
   let i = 0;
   for (; i < w.length; i++) {
