@@ -126,6 +126,13 @@ my_input.addEventListener("input", () => {
   }
 });
 
+my_input.addEventListener("keypress", (e) => {
+  if (e.key == "Enter") {
+    e.preventDefault();
+    my_button.click();
+  }
+});
+
 my_button.addEventListener("click", () => {
   let w = normalize_game_word(my_input.value);
   if (w.length != my_game.w.length) {
