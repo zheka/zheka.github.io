@@ -166,7 +166,8 @@ my_button.addEventListener("click", () => {
   .catch((e) => console.log(e));
 });
 
-if (my_game.w.length == 0) {
+if (my_game.w.length < 1 || my_game.w.length > 10 ||
+    my_game.n < 1 || my_game.n > 10) {
   return;
 }
 
