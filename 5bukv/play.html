@@ -96,6 +96,15 @@ function add_scored_word(w) {
     e.classList.add(cc[v.s[i]]);
   }
   words.push(w);
+  if (v.v) {
+    my_button.innerHTML = "&#x1F389;";
+    my_button.disabled = true;
+    my_input.disabled = true;
+  } else if (words.length == my_game.n) {
+    my_button.innerHTML = "&#x1F571;";
+    my_button.disabled = true;
+    my_input.disabled = true;
+  }
 }
 
 function normalize_game_word(w) {
