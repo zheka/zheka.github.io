@@ -33,6 +33,10 @@
   color: black;
 }
 
+#my_game {
+  display: none;
+}
+
 #word_button {
   font-family: monospace, monospace;
   font-size: min(9vw, 18mm);
@@ -53,13 +57,17 @@
 <a href="new.html">New</a>
 </div>
 
+<div id="my_game">
+
 <table id="my_board"></table>
 
 <div>
-<button id="word_button" type="button"></button>
+<button id="word_button" type="button">&#x2705;</button>
 </div>
 
 <input id="word_input" type="text"/>
+
+</div>
 
 <script src="game.js"></script>
 <script>
@@ -172,7 +180,7 @@ my_button.addEventListener("click", () => {
   }
   my_board.innerHTML = s;
 
-  my_button.innerHTML = "&#x2705;";
+  document.getElementById("my_game").style.display = "initial";
 }());
 
 </script>
