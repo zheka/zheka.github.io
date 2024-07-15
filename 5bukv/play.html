@@ -71,6 +71,7 @@
 
 <script src="game.js"></script>
 <script>
+(function () {
 
 function load_game() {
   let g = {w: "ОМУЛЬ", n: 6};
@@ -165,24 +166,23 @@ my_button.addEventListener("click", () => {
   .catch((e) => console.log(e));
 });
 
-(function () {
-  if (my_game.w.length == 0) {
-    return;
-  }
+if (my_game.w.length == 0) {
+  return;
+}
 
-  let s = "";
-  for (let j = 0; j < my_game.n; j++) {
-    s += "<tr>";
-    for (let i = 0; i < my_game.w.length; i++) {
-      s += "<td class=\"char_box\"></td>";
-    }
-    s += "</tr>";
+let s = "";
+for (let j = 0; j < my_game.n; j++) {
+  s += "<tr>";
+  for (let i = 0; i < my_game.w.length; i++) {
+    s += "<td class=\"char_box\"></td>";
   }
-  my_board.innerHTML = s;
+  s += "</tr>";
+}
+my_board.innerHTML = s;
 
-  document.getElementById("my_game").style.display = "initial";
+document.getElementById("my_game").style.display = "initial";
+
 }());
-
 </script>
 </body>
 </html>
