@@ -72,6 +72,7 @@
 <script src="game.js"></script>
 <script>
 (function () {
+"use strict";
 
 function load_game() {
   let g = {w: "ОМУЛЬ", n: 6};
@@ -105,6 +106,7 @@ function add_scored_word(w) {
     e.classList.add(cc[v.s[i]]);
   }
   words.push(w);
+  my_input.value = "";
   if (v.v) {
     my_button.innerHTML = "&#x1F601;";
     my_button.disabled = true;
@@ -159,7 +161,6 @@ my_button.addEventListener("click", () => {
   verify_word(w, "ru")
   .then((r) => {
     if (r.v) {
-      my_input.value = "";
       add_scored_word(w);
     }
   })
