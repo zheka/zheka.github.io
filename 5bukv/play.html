@@ -74,19 +74,6 @@
 (function () {
 "use strict";
 
-function load_game() {
-  let g = {w: "ОМУЛЬ", n: 6};
-  let u = new URL(location.href);
-  let v = u.searchParams.get("game")
-  if (v) {
-    g = unpack_game(v);
-  }
-  return g;
-}
-
-const my_game = load_game();
-let words = [];
-
 const my_board = document.getElementById("my_board");
 const my_button = document.getElementById("word_button");
 const my_input = document.getElementById("word_input");
@@ -167,6 +154,13 @@ my_button.addEventListener("click", () => {
   .catch((e) => console.log(e));
 });
 
+const u = new URL(location.href);
+const v = u.searchParams.get("game");
+if (!v) {
+  return;
+}
+
+const my_game = unpack_game(v);
 if (my_game.w.length < 1 || my_game.w.length > 10 ||
     my_game.n < 1 || my_game.n > 10) {
   return;
@@ -181,8 +175,9 @@ for (let j = 0; j < my_game.n; j++) {
   s += "</tr>";
 }
 my_board.innerHTML = s;
-
 document.getElementById("my_game").style.display = "initial";
+
+let words = [];
 
 }());
 </script>
