@@ -55,6 +55,7 @@
 
 <div>
 <a href="new.html">New</a>
+| <a id="my_progress" href="#">Share progress</a>
 </div>
 
 <div id="my_game">
@@ -154,13 +155,13 @@ my_button.addEventListener("click", () => {
   .catch((e) => console.log(e));
 });
 
-const u = new URL(location.href);
-const v = u.searchParams.get("game");
-if (!v) {
+const my_url = new URL(location.href);
+
+const my_packed_game = my_url.searchParams.get("game");
+if (!my_packed_game) {
   return;
 }
-
-const my_game = unpack_game(v);
+const my_game = unpack_game(my_packed_game);
 if (my_game.w.length < 1 || my_game.w.length > 10 ||
     my_game.n < 1 || my_game.n > 10) {
   return;
@@ -178,6 +179,28 @@ my_board.innerHTML = s;
 document.getElementById("my_game").style.display = "initial";
 
 let words = [];
+
+const my_packed_progress = my_url.searchParams.get("progress");
+if (my_packed_progress) {
+  for (const w of JSON.parse(my_packed_progress)) {
+    add_scored_word(w);
+  }
+}
+
+document.getElementById("my_progress").addEventListener("click", () => {
+  let u = new URL(my_url);
+  u.searchParams.set("game", my_packed_game);
+  if (words.length > 0) {
+    u.searchParams.set("progress", JSON.stringify(words));
+  }
+  if (navigator.share) {
+    navigator.share({title: '5bukv', url: u})
+    .catch((e) => console.log(e));
+  } else {
+    navigator.clipboard.writeText(u.href)
+    .catch((e) => console.log(e));
+  }
+});
 
 }());
 </script>
