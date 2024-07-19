@@ -1,5 +1,63 @@
 "use strict";
 
+// Helper class to pack/unpack bits.
+class BitArray {
+  constructor(n) {
+    this.buf = new Uint8Array((n + 7) / 8);
+  }
+
+  static fromBase64(s) {
+    const b = atob(s);
+    let r = new BitArray(0);
+    r.buf = Uint8Array.from(b, (c) => c.charCodeAt(0));
+    return r;
+  }
+
+  toBase64() {
+    const s = String.fromCharCode.apply(null, this.buf);
+    return btoa(s);
+  }
+
+  get(i, b) {
+    if (b < 1 || b > 8) {
+      throw `cannot get ${b} bits`;
+    }
+    if (i < 0 || i + b > 8 * this.buf.length) {
+      throw `cannot get ${b} bits at ${i}`;
+    }
+    let v = 0;
+    const m = (1 << b) - 1;
+    const p = i % 8;
+    const k = (i - p) / 8;
+    v = (this.buf[k] & (m << p)) >> p;
+    if (p + b > 8) {
+      const q = 8 - p;
+      v |= (this.buf[k + 1] & (m >> q)) << q;
+    }
+    return v;
+  }
+
+  set(i, b, v) {
+    if (b < 1 || b > 8) {
+      throw `cannot set ${b} bits`;
+    }
+    if (i < 0 || i + b > 8 * this.buf.length) {
+      throw `cannot set ${b} bits at ${i}`;
+    }
+    const m = (1 << b) - 1;
+    if (v != (v & m)) {
+      throw `value ${v} does not fit in ${b} bits`;
+    }
+    const p = i % 8;
+    const k = (i - p) / 8;
+    this.buf[k] = (this.buf[k] & ~(m << p)) | (v << p);
+    if (p + b > 8) {
+      const q = 8 - p;
+      this.buf[k + 1] = (this.buf[k + 1] & ~(m >> q)) | (v >> q);
+    }
+  }
+};
+
 // Pack game object into an obfuscated string.
 function pack_game(g) {
   const s = JSON.stringify(g);
