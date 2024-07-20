@@ -52,7 +52,7 @@ my_share.addEventListener("click", () => {
     }
     my_error.innerText = "";
     let u = new URL(location.href.replace("/new.html", "/play.html"));
-    u.searchParams.set("game", pack_game({w: w, n: n}));
+    u.searchParams.set("g", pack_game({w: w, n: n}));
     if (navigator.share) {
       navigator.share({title: '5bukv', url: u})
       .catch((e) => console.log(e));

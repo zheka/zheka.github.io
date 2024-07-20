@@ -157,7 +157,7 @@ my_button.addEventListener("click", () => {
 
 const my_url = new URL(location.href);
 
-const my_packed_game = my_url.searchParams.get("game");
+const my_packed_game = my_url.searchParams.get("g");
 if (!my_packed_game) {
   return;
 }
@@ -180,7 +180,7 @@ document.getElementById("my_game").style.display = "initial";
 
 let words = [];
 
-const my_packed_progress = my_url.searchParams.get("progress");
+const my_packed_progress = my_url.searchParams.get("p");
 if (my_packed_progress) {
   for (const w of unpack_progress(my_packed_progress, my_game.w.length)) {
     add_scored_word(w);
@@ -189,9 +189,9 @@ if (my_packed_progress) {
 
 document.getElementById("my_progress").addEventListener("click", () => {
   let u = new URL(my_url);
-  u.searchParams.set("game", my_packed_game);
+  u.searchParams.set("g", my_packed_game);
   if (words.length > 0) {
-    u.searchParams.set("progress", pack_progress(words));
+    u.searchParams.set("p", pack_progress(words));
   }
   if (navigator.share) {
     navigator.share({title: '5bukv', url: u})
