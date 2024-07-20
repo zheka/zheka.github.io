@@ -182,7 +182,7 @@ let words = [];
 
 const my_packed_progress = my_url.searchParams.get("progress");
 if (my_packed_progress) {
-  for (const w of JSON.parse(my_packed_progress)) {
+  for (const w of unpack_progress(my_packed_progress, my_game.w.length)) {
     add_scored_word(w);
   }
 }
@@ -191,7 +191,7 @@ document.getElementById("my_progress").addEventListener("click", () => {
   let u = new URL(my_url);
   u.searchParams.set("game", my_packed_game);
   if (words.length > 0) {
-    u.searchParams.set("progress", JSON.stringify(words));
+    u.searchParams.set("progress", pack_progress(words));
   }
   if (navigator.share) {
     navigator.share({title: '5bukv', url: u})

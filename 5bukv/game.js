@@ -103,6 +103,25 @@ function unpack_game(s) {
   return {w: w, n: n};
 }
 
+function pack_progress(p) {
+  let b = new BitWriteStream();
+  b.write(4, p.length);
+  for (const w of p) {
+    packRU(b, w);
+  }
+  return b.toBase64();
+}
+
+function unpack_progress(s, m) {
+  let b = BitReadStream.fromBase64(s);
+  const n = b.read(4);
+  let p = [];
+  for (let i = 0; i < n; i++) {
+    p.push(unpackRU(b, m));
+  }
+  return p;
+}
+
 function normalize_word(w, l) {
   let r = w.trim().toUpperCase();
   if (l == "ru") {
