@@ -1,76 +1,106 @@
 "use strict";
 
-// Helper class to pack/unpack bits.
-class BitArray {
-  constructor(n) {
-    this.buf = new Uint8Array((n + 7) / 8);
-  }
-
-  static fromBase64(s) {
-    const b = atob(s);
-    let r = new BitArray(0);
-    r.buf = Uint8Array.from(b, (c) => c.charCodeAt(0));
-    return r;
+class BitWriteStream {
+  constructor() {
+    this.buf = [];
+    this.pos = 0;
   }
 
   toBase64() {
-    const s = String.fromCharCode.apply(null, this.buf);
-    return btoa(s);
+    return btoa(String.fromCharCode.apply(null, this.buf));
   }
 
-  get(i, b) {
+  write(b, v) {
     if (b < 1 || b > 8) {
-      throw `cannot get ${b} bits`;
-    }
-    if (i < 0 || i + b > 8 * this.buf.length) {
-      throw `cannot get ${b} bits at ${i}`;
-    }
-    let v = 0;
-    const m = (1 << b) - 1;
-    const p = i % 8;
-    const k = (i - p) / 8;
-    v = (this.buf[k] & (m << p)) >> p;
-    if (p + b > 8) {
-      const q = 8 - p;
-      v |= (this.buf[k + 1] & (m >> q)) << q;
-    }
-    return v;
-  }
-
-  set(i, b, v) {
-    if (b < 1 || b > 8) {
-      throw `cannot set ${b} bits`;
-    }
-    if (i < 0 || i + b > 8 * this.buf.length) {
-      throw `cannot set ${b} bits at ${i}`;
+      throw `cannot write ${b} bits`;
     }
     const m = (1 << b) - 1;
     if (v != (v & m)) {
       throw `value ${v} does not fit in ${b} bits`;
     }
-    const p = i % 8;
-    const k = (i - p) / 8;
-    this.buf[k] = (this.buf[k] & ~(m << p)) | (v << p);
-    if (p + b > 8) {
-      const q = 8 - p;
-      this.buf[k + 1] = (this.buf[k + 1] & ~(m >> q)) | (v >> q);
+    if (this.pos == 0) {
+      this.buf.push(v);
+    } else {
+      this.buf[this.buf.length - 1] |= (v << this.pos) & 0xff;
     }
+    if (this.pos + b > 8) {
+      this.buf.push(v >> (8 - this.pos));
+    }
+    this.pos = (this.pos + b) % 8;
   }
 };
 
+class BitReadStream {
+  constructor(buf) {
+    this.buf = buf;
+    this.pos = 0;
+  }
+
+  static fromBase64(s) {
+    return new BitReadStream(Array.from(atob(s), (c) => c.charCodeAt(0)));
+  }
+
+  read(b) {
+    if (b < 1 || b > 8) {
+      throw `cannot read ${b} bits`;
+    }
+    const m = (1 << b) - 1;
+    let v = (this.buf[0] >> this.pos) & m;
+    if (this.pos + b >= 8) {
+      this.buf.shift();
+      v |= (this.buf[0] << (8 - this.pos)) & m;
+    }
+    this.pos = (this.pos + b) % 8;
+    return v;
+  }
+};
+
+function packEN(b, s) {
+  for (let i = 0; i < s.length; i++) {
+    b.write(5, s.charCodeAt(i) - "A".charCodeAt(0));
+  }
+}
+
+function unpackEN(b, n) {
+  let s = "";
+  for (let i = 0; i < n; i++) {
+    s += String.fromCharCode(b.read(5) + "A".charCodeAt(0));
+  }
+  return s;
+}
+
+function packRU(b, s) {
+  for (let i = 0; i < s.length; i++) {
+    b.write(5, s.charCodeAt(i) - "А".charCodeAt(0));
+  }
+}
+
+function unpackRU(b, n) {
+  let s = "";
+  for (let i = 0; i < n; i++) {
+    s += String.fromCharCode(b.read(5) + "А".charCodeAt(0));
+  }
+  return s;
+}
+
 // Pack game object into an obfuscated string.
 function pack_game(g) {
-  const s = JSON.stringify(g);
-  const b = new TextEncoder().encode(s);
-  const bs = Array.from(b, (c) => String.fromCodePoint(c)).join("");
-  return btoa(bs);
+  let b = new BitWriteStream();
+  packEN(b, "RU");
+  b.write(4, g.w.length);
+  packRU(b, g.w);
+  b.write(4, g.n);
+  return b.toBase64();
 }
 
 // Unpack obfuscated string into a game object.
 function unpack_game(s) {
-  const bs = atob(s);
-  const b = Uint8Array.from(bs, (c) => c.codePointAt(0));
-  return JSON.parse(new TextDecoder().decode(b));
+  let b = BitReadStream.fromBase64(s);
+  unpackEN(b, 2);
+  const m = b.read(4);
+  const w = unpackRU(b, m);
+  const n = b.read(4);
+  return {w: w, n: n};
 }
 
 function normalize_word(w, l) {
