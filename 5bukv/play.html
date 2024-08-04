@@ -84,6 +84,11 @@ function add_scored_word(w) {
   if (words.length == my_game.n) {
     return;
   }
+  for (const u of words) {
+    if (u == w) {
+      return;
+    }
+  }
   const cc = ["missing", "present", "found"];
   const v = score_word(my_game.w, w);
   let p = my_game.w.length * words.length;
