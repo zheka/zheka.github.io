@@ -20,32 +20,42 @@ the real fix; until then, every project hosted here follows these rules.
 
 ## Rules
 
-Rules 1, 2 and 4–6 are requirements; the size limits in rule 3 are recommendations.
+Every project hosted here must follow the required rules. The recommended ones are good
+practice; nothing checks them.
 
-1. **Name everything after the repository.** Every `localStorage` key, IndexedDB database and
-   Cache Storage cache a project creates is its repository name, or starts with it and a
-   hyphen: `<repo>` or `<repo>-<anything>` (e.g. `kcal`, `kcal-exp-composer`). The repository
-   name is also the project's path here, so it is unique on this origin, and no other
-   coordination is needed. No generic names (`settings`, `data`, `history`). Names from before
-   this rule are renamed by the project (moved on first load), not left behind.
-2. **Never touch what isn't yours.** No `localStorage.clear()`, `sessionStorage.clear()`, or
-   deleting every database or cache. To remove all of a project's data, list the names
-   (`Object.keys(localStorage)`, `indexedDB.databases()`, `caches.keys()`) and delete only those
-   that are the repository name or start with `<repo>-`. (`clear()` in tests is fine: test
-   browsers are isolated.)
-3. **Keep `localStorage` small.** Its quota (about 5 million characters) is shared by all
-   projects, and the browser enforces only that total. Required: handle a refused write
-   (another project may have used the space) without losing what the project has.
-   Recommended, not enforced: use `localStorage` for a project's own small, essential data and
-   IndexedDB for anything that grows (photos, logs, histories, caches of fetched data); stay
-   under about 1 million characters per project, and show the user when the data passes that.
-4. **Scope service workers to the project's path.** Never register one at `/`. A navigation
-   fallback (e.g. Workbox's `navigateFallback`) answers only within the project's scope; paths
-   inside it (like `/kcal/experimental/`) are the project's own business. Caches named by
-   Workbox's defaults include the scope, which satisfies rule 1.
-5. **No secrets you wouldn't share with every project here.** API keys and tokens kept in the
-   browser are readable by all of them; prefer keys limited to the one use, and don't load
-   third-party scripts at runtime.
+### Required
+
+1. **Name everything after the repository.** Every `localStorage` or `sessionStorage` key,
+   IndexedDB database and Cache Storage cache a project creates is named `<repo>` or
+   `<repo>-<anything>` (e.g. `kcal`, `kcal-exp-composer`). The repository name is also the
+   project's path here, so it is already unique on this origin. Generic names (`settings`,
+   `data`, `history`) are not allowed. If a project has data under older names, it moves that
+   data to the new name on first load and deletes the old key.
+2. **Delete only your own data.** Don't call `localStorage.clear()` or `sessionStorage.clear()`,
+   and don't delete every database or cache. To remove all of a project's data, list the names
+   (`Object.keys(localStorage)`, `indexedDB.databases()`, `caches.keys()`) and delete only the
+   ones that are `<repo>` or start with `<repo>-`. (Tests may use `clear()`: test browsers are
+   isolated.)
+3. **Survive a refused `localStorage` write.** The quota is shared, so a write can fail because
+   another project used up the space. When that happens, the project must not lose or corrupt
+   the data it already has.
+4. **Scope service workers to `/<repo>/`.** Never register one at `/`. A navigation fallback
+   (e.g. Workbox's `navigateFallback`) must answer only within that scope. How the project
+   handles paths under its own scope (like `/kcal/experimental/`) is up to the project.
+   Workbox's default cache names include the scope, so they satisfy rule 1.
+5. **No secrets in the browser that every other project here shouldn't see.** Any project can
+   read API keys and tokens stored here.
 6. **No cookies.**
-7. **Asking for persistent storage** (`navigator.storage.persist()`) is fine for any project: it
-   protects all of them.
+
+### Recommended
+
+- **Keep `localStorage` small.** Use it for small, essential data and use IndexedDB for anything
+  that grows (photos, logs, histories, caches of fetched data). Stay under about 1 million
+  characters per project, and tell the user when the data goes past that.
+- **Limit what a leaked key can do.** Prefer API keys restricted to their one use.
+- **Don't load third-party scripts at runtime.** They run with access to every project's data.
+
+### Allowed
+
+- **`navigator.storage.persist()`**: any project may ask for persistent storage. When granted,
+  it protects every project on the origin.
