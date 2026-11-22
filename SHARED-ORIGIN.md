@@ -29,8 +29,7 @@ practice; nothing checks them.
    IndexedDB database and Cache Storage cache a project creates is named `<repo>` or
    `<repo>-<anything>` (e.g. `kcal`, `kcal-exp-composer`). The repository name is also the
    project's path here, so it is already unique on this origin. Generic names (`settings`,
-   `data`, `history`) are not allowed. If a project has data under older names, it moves that
-   data to the new name on first load and deletes the old key.
+   `data`, `history`) are not allowed.
 2. **Delete only your own data.** Don't call `localStorage.clear()` or `sessionStorage.clear()`,
    and don't delete every database or cache. To remove all of a project's data, list the names
    (`Object.keys(localStorage)`, `indexedDB.databases()`, `caches.keys()`) and delete only the
