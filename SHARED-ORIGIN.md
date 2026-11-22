@@ -20,6 +20,8 @@ the real fix; until then, every project hosted here follows these rules.
 
 ## Rules
 
+Rules 1, 2 and 4–6 are requirements; the size limits in rule 3 are recommendations.
+
 1. **Name everything after the repository.** Every `localStorage` key, IndexedDB database and
    Cache Storage cache a project creates is its repository name, or starts with it and a
    hyphen: `<repo>` or `<repo>-<anything>` (e.g. `kcal`, `kcal-exp-composer`). The repository
@@ -31,12 +33,12 @@ the real fix; until then, every project hosted here follows these rules.
    (`Object.keys(localStorage)`, `indexedDB.databases()`, `caches.keys()`) and delete only those
    that are the repository name or start with `<repo>-`. (`clear()` in tests is fine: test
    browsers are isolated.)
-3. **Keep `localStorage` small.** Its quota is shared by all projects: use it only for a
-   project's own small, essential data, and put anything that grows (photos, logs, histories,
-   caches of fetched data) in IndexedDB. A project warns its user well before its data takes a
-   large share of the 5 million characters (leave room for the others: about 1 million), and
-   handles a refused write (another project may have used the space) without losing what it
-   has.
+3. **Keep `localStorage` small.** Its quota (about 5 million characters) is shared by all
+   projects, and the browser enforces only that total. Required: handle a refused write
+   (another project may have used the space) without losing what the project has.
+   Recommended, not enforced: use `localStorage` for a project's own small, essential data and
+   IndexedDB for anything that grows (photos, logs, histories, caches of fetched data); stay
+   under about 1 million characters per project, and show the user when the data passes that.
 4. **Scope service workers to the project's path.** Never register one at `/`. A navigation
    fallback (e.g. Workbox's `navigateFallback`) answers only within the project's scope; paths
    inside it (like `/kcal/experimental/`) are the project's own business. Caches named by
